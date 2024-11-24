@@ -9,7 +9,7 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(6, 5, 3, 4); // PWM pins 6, 5, 3. Enable 
 float Kp = 0.1, Ki = 2, Kd = 0; // Adjusted PID gains
 float last_error = 0.0, integral = 0.0;
 
-const float pid_threshold = 0.0; // Threshold for PID correction (radians)
+const float pid_threshold = 0.05; // Threshold for PID correction (radians)
 const float decimal_precision = 0.01; // For two decimal places
 
 void setup() {
@@ -75,6 +75,8 @@ void loop() {
 if (abs(pid_output) >= pid_threshold) {
     // Round PID output to 2 decimal places
     pid_output = round(pid_output / decimal_precision) * decimal_precision;
+  Serial.print(", PID Output: ");
+  Serial.println(pid_output, 2);
 
     // Update motor position target
     motor.move(current_angle + pid_output);
@@ -87,9 +89,9 @@ if (abs(pid_output) >= pid_threshold) {
   Serial.print("Desired: ");
   Serial.print(desired_rounded, 2); // Print rounded desired angle to 2 decimals
   Serial.print(", Current: ");
-  Serial.print(current_angle, 2);   // Print rounded current angle to 2 decimals
-  Serial.print(", PID Output: ");
-  Serial.println(pid_output, 4);
+  Serial.println(current_angle, 2);   // Print rounded current angle to 2 decimals
+  //Serial.print(", PID Output: ");
+  //Serial.println(pid_output, 2);
 
   delay(5); // Reduce communication bottlenecks
 }
