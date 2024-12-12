@@ -47,5 +47,5 @@ void loop() {
     last_sent_angle = precise_angle; // Update the last sent angle
   }
 
-  delay(10); // Reduce communication frequency
+  delay(100); // Reduce communication frequency
 }

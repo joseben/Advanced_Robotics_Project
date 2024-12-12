@@ -5,8 +5,9 @@ MagneticSensorSPI sensor = MagneticSensorSPI(AS5048_SPI, 10); // AS5048 sensor, 
 BLDCMotor motor = BLDCMotor(11); // GM3506 motor with 11 pole pairs
 BLDCDriver3PWM driver = BLDCDriver3PWM(6, 5, 3, 4); // PWM pins 6, 5, 3. Enable pin 4.
 
-const float movement_threshold = 0; // Threshold to avoid small oscillations
-float desired_angle = 0.0;            // Holds the last valid desired angle
+const float step_increment = 0.001;  // Step size for incremental movement
+float target_angle = 0.0;            // Holds the current target angle
+float desired_angle = 0.0;           // Holds the desired angle sent from the master
 
 void setup() {
   SPI.begin();
@@ -47,19 +48,27 @@ void loop() {
     }
   }
 
-  // Get the current motor position
-  float current_angle = sensor.getPreciseAngle();
-
-  // Move motor only if the correction exceeds the threshold
-  if (abs(desired_angle - current_angle) >= movement_threshold) {
-    motor.move(desired_angle); // Directly move to the desired angle
+  // Update target angle in small steps towards the desired angle
+  if (abs(desired_angle - target_angle) > step_increment) {
+    if (desired_angle > target_angle) {
+      target_angle += step_increment; // Incrementally increase towards desired angle
+    } else {
+      target_angle -= step_increment; // Incrementally decrease towards desired angle
+    }
+  } else {
+    target_angle = desired_angle; // Snap to desired angle when close enough
   }
+
+  // Move motor to the updated target angle
+  motor.move(target_angle);
 
   // Optional: Debugging
   Serial.print("Desired: ");
-  Serial.print(desired_angle, 2);
+  Serial.print(desired_angle, 3);
+  Serial.print(", Target: ");
+  Serial.print(target_angle, 3);
   Serial.print(", Current: ");
-  Serial.println(current_angle, 2);
+  Serial.println(sensor.getPreciseAngle(), 3);
 
-  //delay(100); // Reduce communication bottlenecks
+  //delay(10); // Reduce communication bottlenecks
 }
